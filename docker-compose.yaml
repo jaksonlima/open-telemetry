@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - open-telemetry
+
+  java:
+    container_name: java
+    build:
+      context: ./spring-java/
+      dockerfile: Dockerfile
+    environment:
+      - API_CLIENT=http://koltin:8081
+      - OTEL_SERVICE_NAME=spring-java-open-telemetry
+      - OTEL_TRACES_EXPORTER=zipkin
+      - OTEL_EXPORTER_ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - OTEL_METRICS_EXPORTER=logging
+      - OTEL_LOGS_EXPORTER=logging
+    networks:
+      - open-telemetry
+
+  koltin:
+    container_name: koltin
+    build:
+      context: ./spring-kotlin/
+      dockerfile: Dockerfile
+    environment:
+      - API_CLIENT=http://java:8080
+      - OTEL_SERVICE_NAME=spring-koltin-open-telemetry
+      - OTEL_TRACES_EXPORTER=zipkin
+      - OTEL_EXPORTER_ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - OTEL_METRICS_EXPORTER=logging
+      - OTEL_LOGS_EXPORTER=logging
+    networks:
+      - open-telemetry
+
+networks:
+  open-telemetry:
+    driver: bridge
