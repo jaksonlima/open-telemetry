@@ -10,4 +10,9 @@
 docker compose up --build --force-recreate
 ```
 
+### Porta Zipkin
+```
+http://localhost:9411/zipkin/
+```
+
 
